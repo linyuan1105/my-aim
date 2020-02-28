@@ -125,7 +125,8 @@ const store = new Vuex.Store({
 			divlist.innerHTML = "加载中~~~";
 			document.getElementById("tip").appendChild(divlist)
             // 真实环境通过 ajax 获取，这里用异步模拟
-            setTimeout(() => {/*调用setProductList,传入参数product_data*/
+			///*调用setProductList,传入参数product_data*/
+            setTimeout(() => {
                 context.commit('setProductList', product_data);
             }, 1000);
 			

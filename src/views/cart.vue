@@ -77,6 +77,7 @@
 	            <div class="cart-control-order" @click="handleOrder">现在结算</div>
 	        </div>
 			<Back-top :height="10" :bottom="100"  :duration="1000"></Back-top>
+			<!-- <input v-model="cartListdata" /> -->
 	    </div>
 	</div>
 </template>
@@ -85,7 +86,10 @@
 	import product_data from '../product.js';
 	import * as am4core from "@amcharts/amcharts4/core";
 	import * as am4charts from "@amcharts/amcharts4/charts";
+	// let chart = am4core.create(this.$refs.chartdiv, am4charts.PieChart);/*创建图表实例*/
+	
 	export default{
+		
 		data () {
 		    return {
 		        productList: product_data,
@@ -100,7 +104,9 @@
 				netEasyIDmusic:'',
 				name:'',
 				author:'',
-				url:''
+				url:'',
+				cartListdata:this.$store.state.cartList,
+				am4element:''
 				
 		    }
 		},
@@ -128,6 +134,7 @@
 		        return count;
 		    },
 		    costAll () {
+				
 		        let cost = 0;
 		        this.cartList.forEach(item => {
 		            cost += this.productDictList[item.id].cost * item.count;
@@ -169,9 +176,7 @@
 			cancel () {
 			    this.$Message.info('Clicked cancel');
 			},
-			close(){
-				this.open = !this.open
-			},
+			
 		    handleCount (index, count) {
 		        if (count < 0 && this.cartList[index].count === 1) return;
 		        this.$store.commit('editCartCount', {
@@ -202,42 +207,74 @@
 			  var scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop
 			  var backToTop = document.getElementsByClassName('back-to-top');
 			  if(scrollTop>10){
-				  
 				  // backToTop[0].style.color = "black";
 			  }else{
 				  // backToTop[0].style.color = "white";
 			  }
 			},
+			close(){
+				this.open = !this.open
+				console.log(this.$store.state.cartList)
+			},
+			createAm4elment(){
+				this.am4element = am4core.create(this.$refs.chartdiv, am4charts.PieChart);/*创建图表实例*/
+				// am4element.series._values=[]
+				// am4element.data=null;
+			},
+			//数据可视化教程
 			cheackamchart(){
-				let chart = am4core.create(this.$refs.chartdiv, am4charts.PieChart);/*创建图表实例*/
-				//内联数据
-				if(this.cartList.length!==0){
-							  let productlist = this.productDictList,productlen = this.cartList.length;
-							  for(let i =0;i<productlen;i++){
-								  chart.data[i]={
-									  "country": productlist[this.cartList[i].id].name ,
-									  "litres": this.cartList[i].count
-								  }
-							  }
-				}else{
-					chart.data = ''
+				let chart = this.am4element
+				let productlist = this.productDictList,productlen = this.cartListdata.length;
+				chart.series._values=[]
+					for(let i =0;i<productlen;i++){
+						  chart.data[i]={
+							  "country": productlist[this.cartList[i].id].name ,
+							  "litres": this.$store.state.cartList[i].count
+					  }
+					}
+				if(chart.data.length!==productlen){
+					chart.data=[]
+					for(let i =0;i<productlen;i++){
+						  chart.data[i]={
+							  "country": productlist[this.cartList[i].id].name ,
+							  "litres": this.$store.state.cartList[i].count
+					  }
+					}
 				}
-				//使用外部数据亦可以
-				// chart.dataSource.url = "pie_chart_data.json";
+				// chart.data=[]
+							  
+							  
+				
 				let pieSeries = chart.series.push(new am4charts.PieSeries());
+				// console.log(chart.data,88888888888888)
 				pieSeries.dataFields.value = "litres";
 				pieSeries.dataFields.category = "country";
-				
-				 
 			}
 			
 		},
+		watch:{
+			cartListdata:{
+				handler:function(newval){
+					this.cheackamchart()
+					// console.log(newval)
+				},
+				deep:true
+			}
+			
+		},
+		beforeCreate() {
+			
+		},
+		beforeUpdate(){
+			
+		},
 		updated() {
-			this.cheackamchart()
+			
 		},
 		mounted () {
+			this.createAm4elment()
+			this.cheackamchart()
 		  window.addEventListener('scroll', this.handleScroll);
-		  this.cheackamchart();
 		  var aim = document.getElementsByClassName('cart-content-main')
 		  for(let i =0;i<aim.length;i++){
 			  var context = require.context("../img", false, /\.jpg$/);
@@ -251,11 +288,7 @@
 		},//通过加一个数据，该数据是计算属性中的总数，利用计算属性计算结果变化
 		//实现监听整个分布图的变化
 		//通过监听也可以实现数据的变化，mount只是用于数据的挂载，而监听也可以实现数据变化并挂载
-		watch:{
-			countwatch:function(){
-				// this.cheackamchart()
-			}
-		}
+		
 	}
 </script>
 
