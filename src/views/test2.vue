@@ -11,6 +11,8 @@
 		</Button>
 		<Button loading shape="circle"></Button>
 		<Button  shape="circle" type="primary" loading="false"></Button>
+		<button>git更新</button>
+		
 	</div>
     
 </template>
